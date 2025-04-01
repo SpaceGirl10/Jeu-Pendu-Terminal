@@ -4,6 +4,16 @@ import pyaes
 from random import randint
 import random
 import time
+from rich import print
+from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.text import Text
+from rich.padding import Padding
+from rich.table import Table
+from rich import box
+from rich.live import Live
+from rich.progress import Progress
 
 class Pendu:
     def __init__(self, fichier_mots="liste_mots.txt", vies=6):
@@ -14,6 +24,7 @@ class Pendu:
         self.L_mot = ["_" for _ in self.mot]
         self.gagne = False
         self.score = 0
+        
     
     def choisir_mot(self):
         try:
@@ -54,8 +65,10 @@ class Pendu:
         
         if self.gagne:
             print(f"Bravo ! Vous avez trouvé le mot '{self.mot}' avec {self.vies} vies restantes ! Score final : {self.score}")
+            
         else:
             print(f"Dommage... Le mot était '{self.mot}'. Score final : {self.score}")
+            
     
     def tester_lettre(self, lettre, temps_reponse):
         if lettre in self.L_mot:
@@ -85,7 +98,7 @@ class Pendu:
             return False
 
 class Client:
-    def __init__(self, host="10.69.225.142", port=4100):
+    def __init__(self, host="10.69.224.231", port=4100):
         self.host = host
         self.port = port
         self.sock = socket(AF_INET, SOCK_STREAM)
@@ -94,6 +107,7 @@ class Client:
         
         self.e = int(self.sock.recv(2048).decode('utf-8'))
         print("e reçu")
+        self.sock.sendall("bien recu".encode('utf-8'))
         self.n = int(self.sock.recv(2048).decode('utf-8'))
         print("n reçu")
         self.pub = rsa.PublicKey(self.n, self.e)
@@ -122,9 +136,70 @@ class Client:
             instance_jeu.jouer()
             score = instance_jeu.score
             self.envoi(str(score))
-            rep = self.reception()
-            print(rep)
+            self.reception()
+            exit()
+
+class Interface:
+
+    def __init__(self):
+            self.console = Console()
+            self.layout = Layout()
+            self.titre = Text("JEU DU PENDU", justify="center")
+            self.classement = Table(box=box.DOUBLE, title="Classement", style="salmon1")
+            self.classement.header_style = "light_goldenrod2"
+            self.classement.title_style = "light_goldenrod2"
+            self.classement.add_column("Joueur", justify="right", style="light_goldenrod2", min_width=20)
+            self.classement.add_column("Score", justify="right", style="light_goldenrod2", min_width=20)
+            
+            self.layout.split_column(
+                Layout(name="upper"),
+                Layout(name="lower")
+            )
+            
+            self.layout["lower"].split_row(
+                Layout(name="pendu"),
+                Layout(name="right")
+            )
+            
+            self.layout["upper"].split_column(
+                Layout(Panel(self.titre, style="salmon1", expand=True)),
+                Layout(name="mot_a_trouver")
+            )
+            
+            self.layout["right"].split_row(
+                Layout(name="lettres"),
+                Layout(name="full_right")
+            )
+            self.layout["full_right"].split_column(
+                Layout(self.classement, name="classement"),
+                Layout(name="time")
+            )
+            
+            self.layout["lower"].size = None
+            self.layout["lower"].ratio = 3
+            self.layout["classement"].size = None
+            self.layout["classement"].ratio = 15
+
+    def update_classement(self, joueurs_scores):
+        self.classement.rows.clear()
+        for joueur, score in joueurs_scores.items():
+            self.classement.add_row(joueur, str(score))
+    
+    def countdown_timer(self, seconds):
+        with Live(self.layout, refresh_per_second=1):
+            for remaining in range(seconds, -1, -1):
+                timer_text = Text(f"Temps restant : {remaining}s", justify="center", style="medium_turquoise")
+                self.layout["time"].update(Panel(timer_text, style="salmon1"))
+                time.sleep(1)
+    
+    def display_interface(self):
+        self.console.print(self.layout)
+
+    
 
 if __name__ == "__main__":
     client = Client()
     client.start()
+    interface = Interface()
+    interface.display_interface()
+    
