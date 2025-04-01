@@ -4,7 +4,7 @@ import pyaes
 import threading
 
 class Server:
-    def __init__(self, host="10.69.225.142", port=4100):
+    def __init__(self, host="10.69.224.231", port=4100):
         self.host = host
         self.port = port
         self.clef_publique, self.clef_privee = rsa.newkeys(2048)
@@ -30,6 +30,8 @@ class Server:
         n = self.clef_publique.n
         client.sendall(str(e).encode('utf-8'))
         print("e envoyé")
+        reception = client.recv(2048)
+        print(reception.decode('utf-8'))
         client.sendall(str(n).encode('utf-8'))
         print("n envoyé")
         cle_code = client.recv(2048)
@@ -38,8 +40,9 @@ class Server:
         
         while True:
             try:
-                mess = self.reception(client, clef)
-                print(mess)
+                score = self.reception(client, clef)
+                print(score)
+                self.envoi("bien recu".encode('utf-8'))
             except:
                 print(f"Client {address[0]}:{address[1]} déconnecté")
                 break
