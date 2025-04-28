@@ -119,11 +119,11 @@ class Interface:
         self.jeu = jeu
 
         self.layout = Layout()
-        self.titre = Text("JEU DU PENDU", justify="center")
+        self.titre = Text("JEU DU PENDU", justify="center", style="light_goldenrod2")
 
-        self.classement = Table(box=box.DOUBLE, title="Classement", style="salmon1")
-        self.classement.header_style = "light_goldenrod2"
-        self.classement.title_style = "light_goldenrod2"
+        self.classement = Table(box=box.DOUBLE, title="Classement", style="light_goldenrod2")
+        self.classement.header_style = "bold sky_blue3"
+        self.classement.title_style = "bold sky_blue3"
         self.classement.add_column("Joueur", justify="right", style="light_goldenrod2", min_width=20)
         self.classement.add_column("Score", justify="right", style="light_goldenrod2", min_width=20)
 
@@ -182,8 +182,8 @@ class Interface:
             time.sleep(3)
 
     def update_interface(self, final=False):
-        self.layout["mot_a_trouver"].update(Panel(Text(f"Mot : {' '.join(self.jeu.L_mot)}", style="bold white", justify="center"), style="sky_blue3"))
-        self.layout["pendu"].update(Panel(f"Vies restantes : {self.jeu.vies} / {self.jeu.vies_max}\nScore : {self.jeu.score}\n{self.jeu.message}", style="salmon1"))
+        self.layout["mot_a_trouver"].update(Panel(Text(f"Mot : {' '.join(self.jeu.L_mot)}", style="light_goldenrod2", justify="center"), style="sky_blue3"))
+        self.layout["pendu"].update(Panel(f"Vies restantes : {self.jeu.vies} / {self.jeu.vies_max}\nScore : {self.jeu.score}\n{self.jeu.message}", style="sky_blue3"))
         self.layout["time"].update(Panel(Text("Répondez vite ! (15s max)", justify="center"), style="salmon1"))
         
         
@@ -200,3 +200,4 @@ class Interface:
 if __name__ == "__main__":
     client = Client()
     client.start()
+
